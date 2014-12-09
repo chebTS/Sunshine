@@ -80,7 +80,6 @@ public class WeatherProvider extends ContentProvider{
         return matcher;
     }
 
-
     @Override
     public boolean onCreate() {
         mOpenHelper = new WeatherDbHelper(getContext());
