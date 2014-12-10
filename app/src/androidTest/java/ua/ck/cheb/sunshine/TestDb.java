@@ -18,7 +18,10 @@ import static ua.ck.cheb.sunshine.data.WeatherContract.*;
  * Created by cheb on 21.11.2014.
  */
 public class TestDb extends AndroidTestCase{
+
     public static final String LOG_TAG = TestDb.class.getSimpleName();
+    static final String TEST_LOCATION = "99705";
+    static final String TEST_DATE = "20141205";
     public void testCreateDb() throws Throwable {
         mContext.deleteDatabase(WeatherDbHelper.DATABASE_NAME);
         SQLiteDatabase db = new WeatherDbHelper(
@@ -27,19 +30,19 @@ public class TestDb extends AndroidTestCase{
         db.close();
     }
     public void testInsertReadDb() {
-        // If there's an error in those massive SQL table creation Strings,
-        // errors will be thrown here when you try to get a writable database.
+// If there's an error in those massive SQL table creation Strings,
+// errors will be thrown here when you try to get a writable database.
         WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues testValues = createNorthPoleLocationValues();
         long locationRowId;
         locationRowId = db.insert(LocationEntry.TABLE_NAME, null, testValues);
-        // Verify we got a row back.
+// Verify we got a row back.
         assertTrue(locationRowId != -1);
         Log.d(LOG_TAG, "New row id: " + locationRowId);
-        // Data's inserted. IN THEORY. Now pull some out to stare at it and verify it made
-        // the round trip.
-        // A cursor is your primary interface to the query results.
+// Data's inserted. IN THEORY. Now pull some out to stare at it and verify it made
+// the round trip.
+// A cursor is your primary interface to the query results.
         Cursor cursor = db.query(
                 LocationEntry.TABLE_NAME, // Table to Query
                 null, // all columns
@@ -50,11 +53,11 @@ public class TestDb extends AndroidTestCase{
                 null // sort order
         );
         validateCursor(cursor, testValues);
-        // Fantastic. Now that we have a location, add some weather!
+// Fantastic. Now that we have a location, add some weather!
         ContentValues weatherValues = createWeatherValues(locationRowId);
         long weatherRowId = db.insert(WeatherEntry.TABLE_NAME, null, weatherValues);
         assertTrue(weatherRowId != -1);
-        // A cursor is your primary interface to the query results.
+// A cursor is your primary interface to the query results.
         Cursor weatherCursor = db.query(
                 WeatherEntry.TABLE_NAME, // Table to Query
                 null, // leaving "columns" null just returns all the columns.
@@ -70,7 +73,7 @@ public class TestDb extends AndroidTestCase{
     static ContentValues createWeatherValues(long locationRowId) {
         ContentValues weatherValues = new ContentValues();
         weatherValues.put(WeatherEntry.COLUMN_LOC_KEY, locationRowId);
-        weatherValues.put(WeatherEntry.COLUMN_DATETEXT, "20141205");
+        weatherValues.put(WeatherEntry.COLUMN_DATETEXT, TEST_DATE);
         weatherValues.put(WeatherEntry.COLUMN_DEGREES, 1.1);
         weatherValues.put(WeatherEntry.COLUMN_HUMIDITY, 1.2);
         weatherValues.put(WeatherEntry.COLUMN_PRESSURE, 1.3);
@@ -82,9 +85,9 @@ public class TestDb extends AndroidTestCase{
         return weatherValues;
     }
     static ContentValues createNorthPoleLocationValues() {
-        // Create a new map of values, where column names are the keys
+// Create a new map of values, where column names are the keys
         ContentValues testValues = new ContentValues();
-        testValues.put(LocationEntry.COLUMN_LOCATION_SETTING, "99705");
+        testValues.put(LocationEntry.COLUMN_LOCATION_SETTING, TEST_LOCATION);
         testValues.put(LocationEntry.COLUMN_CITY_NAME, "North Pole");
         testValues.put(LocationEntry.COLUMN_COORD_LAT, 64.7488);
         testValues.put(LocationEntry.COLUMN_COORD_LONG, -147.353);
