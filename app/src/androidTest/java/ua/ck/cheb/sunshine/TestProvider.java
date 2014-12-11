@@ -23,9 +23,38 @@ public class TestProvider extends AndroidTestCase{
 
     public static final String LOG_TAG = TestProvider.class.getSimpleName();
 
-    public void testDeleteDb() throws Throwable {
+   /* public void testDeleteDb() throws Throwable {
         mContext.deleteDatabase(WeatherDbHelper.DATABASE_NAME);
+    }*/
+
+
+    public void testDeleteAllRecords(){
+        mContext.getContentResolver().delete(
+                WeatherEntry.CONTENT_URI,
+                null, null
+        );
+        mContext.getContentResolver().delete(
+                LocationEntry.CONTENT_URI,
+                null, null
+        );
+        Cursor cursor = mContext.getContentResolver().query(
+                WeatherEntry.CONTENT_URI,
+                null, null,
+                null, null
+        );
+        assertEquals(cursor.getCount(), 0);
+        cursor.close();
+
+        cursor = mContext.getContentResolver().query(
+                LocationEntry.CONTENT_URI,
+                null, null,
+                null, null
+        );
+        assertEquals(cursor.getCount(), 0);
+        cursor.close();
     }
+
+
     public void testInsertReadProvider() {
     // If there's an error in those massive SQL table creation Strings,
     // errors will be thrown here when you try to get a writable database.
@@ -143,5 +172,64 @@ public class TestProvider extends AndroidTestCase{
         for (String key : source.keySet()) {
             destination.put(key, source.getAsString(key));
         }
+    }
+
+    public void testUpdateLocation(){
+        testDeleteAllRecords();
+        ContentValues values = TestDb.createNorthPoleLocationValues();
+
+        Uri locationUri = mContext.getContentResolver().insert(LocationEntry.CONTENT_URI, values);
+        long locationRowId = ContentUris.parseId(locationUri);
+
+        assertTrue(locationRowId != -1);
+        Log.d(LOG_TAG, "New row id: " + locationRowId);
+
+        ContentValues values2 = new ContentValues(values);
+        values2.put(LocationEntry._ID, locationRowId);
+        values2.put(LocationEntry.COLUMN_CITY_NAME, "Santa's Village");
+
+        int count = mContext.getContentResolver().update(LocationEntry.CONTENT_URI, values2, LocationEntry._ID + "= ?",
+                new String[]{Long.toString(locationRowId)});
+
+        assertEquals(count, 1);
+
+        Cursor cursor = mContext.getContentResolver().query(
+          LocationEntry.buildLocationUri(locationRowId),
+                null,
+                null,
+                null,
+                null
+        );
+        if (cursor.moveToFirst()){
+            TestDb.validateCursor(cursor, values2);
+        }
+        cursor.close();
+
+    }
+
+    public void testDeleteAllRecordsAfter(){
+        mContext.getContentResolver().delete(
+                WeatherEntry.CONTENT_URI,
+                null, null
+        );
+        mContext.getContentResolver().delete(
+                LocationEntry.CONTENT_URI,
+                null, null
+        );
+        Cursor cursor = mContext.getContentResolver().query(
+                WeatherEntry.CONTENT_URI,
+                null, null,
+                null, null
+        );
+        assertEquals(cursor.getCount(), 0);
+        cursor.close();
+
+        cursor = mContext.getContentResolver().query(
+                LocationEntry.CONTENT_URI,
+                null, null,
+                null, null
+        );
+        assertEquals(cursor.getCount(), 0);
+        cursor.close();
     }
 }
