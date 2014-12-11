@@ -107,8 +107,6 @@ public class ForecastFragment extends Fragment {
 
 
 
-
-
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]>{
 
         private int numOfDays = 7;

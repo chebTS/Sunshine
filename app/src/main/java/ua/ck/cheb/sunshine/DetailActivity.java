@@ -18,7 +18,6 @@ import android.widget.TextView;
 
 public class DetailActivity extends ActionBarActivity {
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +29,6 @@ public class DetailActivity extends ActionBarActivity {
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -39,8 +37,6 @@ public class DetailActivity extends ActionBarActivity {
 
         return true;
     }
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -54,18 +50,6 @@ public class DetailActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-/*
-
-    else if (id == R.id.action_share){
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.putExtra(Intent.EXTRA_TEXT, getIntent().getStringExtra(Intent.EXTRA_TEXT) + "#SunshineApp");
-        startActivity(intent);
-    }
-*/
-
-
-
 
     /**
      * A placeholder fragment containing a simple view.
