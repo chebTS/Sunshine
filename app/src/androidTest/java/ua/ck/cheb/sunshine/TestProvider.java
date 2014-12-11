@@ -1,6 +1,7 @@
 package ua.ck.cheb.sunshine;
 
 import android.annotation.TargetApi;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,13 +30,18 @@ public class TestProvider extends AndroidTestCase{
     // If there's an error in those massive SQL table creation Strings,
     // errors will be thrown here when you try to get a writable database.
         WeatherDbHelper dbHelper = new WeatherDbHelper(mContext);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        /*SQLiteDatabase db = dbHelper.getWritableDatabase();*/
+
         ContentValues testValues = TestDb.createNorthPoleLocationValues();
-        long locationRowId;
-        locationRowId = db.insert(LocationEntry.TABLE_NAME, null, testValues);
-        // Verify we got a row back.
+
+
+        Uri locationUri = mContext.getContentResolver().insert(LocationEntry.CONTENT_URI, testValues);
+        long locationRowId = ContentUris.parseId(locationUri);
+
+                // Verify we got a row back.
         assertTrue(locationRowId != -1);
         Log.d(LOG_TAG, "New row id: " + locationRowId);
+
         // Data's inserted. IN THEORY. Now pull some out to stare at it and verify it made
         // the round trip.
         // A cursor is your primary interface to the query results.
