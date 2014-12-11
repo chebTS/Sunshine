@@ -1,5 +1,7 @@
 package ua.ck.cheb.sunshine;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -34,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import ua.ck.cheb.sunshine.data.WeatherContract;
 
 /**
  * Created by cheb on 06.11.2014.
@@ -115,4 +119,6 @@ public class ForecastFragment extends Fragment {
         // TODO: add parsing code here
         return -1;*/
     }
+
+
 }
