@@ -164,11 +164,17 @@ public class DetailActivity extends ActionBarActivity {
             ((TextView) getView().findViewById(R.id.detail_forecast_textview))
                     .setText(weatherDescription);
             boolean isMetric = Utility.isMetric(getActivity());
-            String high = Utility.formatTemperature(
+
+
+            String high = Utility.formatTemperature(getActivity(),
                     data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MAX_TEMP)), isMetric);
             ((TextView) getView().findViewById(R.id.detail_high_textview)).setText(high);
-            String low = Utility.formatTemperature(
+
+
+            String low = Utility.formatTemperature(getActivity(),
                     data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MIN_TEMP)), isMetric);
+            ((TextView) getView().findViewById(R.id.detail_low_textview)).setText(low);
+
             ((TextView) getView().findViewById(R.id.detail_low_textview)).setText(low);
 // We still need this for the share intent
             mForecast = String.format("%s - %s - %s/%s", dateString, weatherDescription, high, low);
