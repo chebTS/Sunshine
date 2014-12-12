@@ -4,11 +4,16 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,15 +44,50 @@ import java.util.List;
 
 import ua.ck.cheb.sunshine.data.WeatherContract;
 
+import static ua.ck.cheb.sunshine.data.WeatherContract.*;
+
 /**
  * Created by cheb on 06.11.2014.
  */
-public class ForecastFragment extends Fragment {
+public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+    private static final int FORECAST_LOADER = 0;
+    private String mLocation;
+
     private ArrayAdapter<String> mForecastAdapter;
     private ListView listView;
+
+    private static final String[] FORECAST_COLUMNS = {
+        // In this case the id needs to be fully qualified with a table name, since
+        // the content provider joins the location & weather tables in the background
+        // (both have an _id column)
+        // On the one hand, that's annoying. On the other, you can search the weather table
+        // using the location set by the user, which is only in the Location table.
+        // So the convenience is worth it.
+            WeatherEntry.TABLE_NAME + "." + WeatherEntry._ID,
+            WeatherEntry.COLUMN_DATETEXT,
+            WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherEntry.COLUMN_MIN_TEMP,
+            LocationEntry.COLUMN_LOCATION_SETTING
+    };
+    // These indices are tied to FORECAST_COLUMNS. If FORECAST_COLUMNS changes, these
+// must change.
+    public static final int COL_WEATHER_ID = 0;
+    public static final int COL_WEATHER_DATE = 1;
+    public static final int COL_WEATHER_DESC = 2;
+    public static final int COL_WEATHER_MAX_TEMP = 3;
+    public static final int COL_WEATHER_MIN_TEMP = 4;
+    public static final int COL_LOCATION_SETTING = 5;
+
     public ForecastFragment() {
     }
 
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(FORECAST_LOADER, null, this);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -120,5 +160,38 @@ public class ForecastFragment extends Fragment {
         return -1;*/
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        // This is called when a new Loader needs to be created. This
+        // fragment only uses one loader, so we don't care about checking the id.
+        // To only show current and future dates, get the String representation for today,
+        // and filter the query to return weather only for dates after or including today.
+        // Only return data after today.
+        String startDate = WeatherContract.getDbDateString(new Date());
+        // Sort order: Ascending, by date.
+        String sortOrder = WeatherEntry.COLUMN_DATETEXT + " ASC";
+        mLocation = Utility.getPreferredLocation(getActivity());
+        Uri weatherForLocationUri = WeatherEntry.buildWeatherLocationWithStartDate(
+                mLocation, startDate);
+        // Now create and return a CursorLoader that will take care of
+        // creating a Cursor for the data being displayed.
+        return new CursorLoader(
+                getActivity(),
+                weatherForLocationUri,
+                FORECAST_COLUMNS,
+                null,
+                null,
+                sortOrder
+        );
+    }
 
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+
+    }
 }
