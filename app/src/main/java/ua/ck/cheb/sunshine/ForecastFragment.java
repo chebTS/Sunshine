@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -53,7 +54,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final int FORECAST_LOADER = 0;
     private String mLocation;
 
-    private ArrayAdapter<String> mForecastAdapter;
+    private SimpleCursorAdapter mForecastAdapter;
     private ListView listView;
 
     private static final String[] FORECAST_COLUMNS = {
@@ -119,9 +120,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateWeather(){
-        String location = Utility.getPreferredLocation(getActivity());
+        /*String location = Utility.getPreferredLocation(getActivity());
         FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(), mForecastAdapter);
-        weatherTask.execute(location);
+        weatherTask.execute(location);*/
+        String location = Utility.getPreferredLocation(getActivity());
+        new FetchWeatherTask(getActivity()).execute(location);
     }
 
 
@@ -130,18 +133,45 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast,
-                R.id.list_item_forecast_textview, new ArrayList<String>());
+        mForecastAdapter = new SimpleCursorAdapter(
+                getActivity(),
+                R.layout.list_item_forecast,
+                null,
+                // the column names to use to fill the textviews
+                new String[]{WeatherContract.WeatherEntry.COLUMN_DATETEXT,
+                        WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+                        WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+                        WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+                },
+                // the textviews to fill with the data pulled from the columns above
+                new int[]{R.id.list_item_date_textview,
+                        R.id.list_item_forecast_textview,
+                        R.id.list_item_high_textview,
+                        R.id.list_item_low_textview
+                },
+                0
+        );
         listView = ((ListView)rootView.findViewById(R.id.listview_forecast));
         listView .setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String forecast = mForecastAdapter.getItem(position);
-                //Toast.makeText(getActivity(), forecast ,Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, forecast);
-                startActivity(intent);
+
+                Cursor cursor = ((SimpleCursorAdapter)parent.getAdapter()).getCursor();
+                if (cursor != null && cursor.moveToPosition(position)) {
+                    String dateString = Utility.formatDate(cursor.getString(COL_WEATHER_DATE));
+                    String weatherDescription = cursor.getString(COL_WEATHER_DESC);
+                    boolean isMetric = Utility.isMetric(getActivity());
+                    String high = Utility.formatTemperature(
+                            cursor.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
+                    String low = Utility.formatTemperature(
+                            cursor.getDouble(COL_WEATHER_MIN_TEMP), isMetric);
+                    String detailString = String.format("%s - %s - %s/%s",
+                            dateString, weatherDescription, high, low);
+                    Intent intent = new Intent(getActivity(), DetailActivity.class)
+                            .putExtra(Intent.EXTRA_TEXT, detailString);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -187,11 +217,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-
+        mForecastAdapter.swapCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
+        mForecastAdapter.swapCursor(null);
     }
 }
