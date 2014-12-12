@@ -116,7 +116,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onStart() {
         super.onStart();
-        updateWeather();
+        //updateWeather();
     }
 
     private void updateWeather(){
@@ -154,22 +154,13 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         listView = ((ListView)rootView.findViewById(R.id.listview_forecast));
         listView .setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Cursor cursor = ((SimpleCursorAdapter)parent.getAdapter()).getCursor();
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Cursor cursor = mForecastAdapter.getCursor();
                 if (cursor != null && cursor.moveToPosition(position)) {
-                    String dateString = Utility.formatDate(cursor.getString(COL_WEATHER_DATE));
-                    String weatherDescription = cursor.getString(COL_WEATHER_DESC);
-                    boolean isMetric = Utility.isMetric(getActivity());
-                    String high = Utility.formatTemperature(
-                            cursor.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
-                    String low = Utility.formatTemperature(
-                            cursor.getDouble(COL_WEATHER_MIN_TEMP), isMetric);
-                    String detailString = String.format("%s - %s - %s/%s",
-                            dateString, weatherDescription, high, low);
                     Intent intent = new Intent(getActivity(), DetailActivity.class)
-                            .putExtra(Intent.EXTRA_TEXT, detailString);
+                            .putExtra(DetailActivity.DATE_KEY, cursor.getString(COL_WEATHER_DATE));
                     startActivity(intent);
                 }
             }
@@ -188,6 +179,15 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
         // TODO: add parsing code here
         return -1;*/
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
+            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+        }
     }
 
     @Override
